@@ -1,7 +1,6 @@
 import os
 import tempfile
 import yt_dlp as youtube_dl
-import time
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
@@ -35,18 +34,15 @@ async def start(update: Update, context):
 
 # Função para lidar com os links de vídeo
 async def handle_video(update: Update, context):
+    print("Recebido um link de vídeo:", update.message.text)  # Adicionando log de depuração
     url = update.message.text
     if 'youtube.com' in url or 'youtu.be' in url:
         await update.message.reply_text('Baixando o vídeo, por favor, aguarde...')
         video_file, title, temp_dir = download_video(url)
         if video_file:
             try:
-                # Aguarda 5 segundos antes de enviar o vídeo
-                time.sleep(5)
-                
                 # Envia o vídeo com o título como legenda
                 await update.message.reply_video(video=open(video_file, 'rb'), caption=f"**Título:** {title}", parse_mode='Markdown')
-                await update.message.reply_text('Processo concluído!')
             except Exception as e:
                 await update.message.reply_text(f"Erro ao enviar o vídeo: {e}")
             finally:
