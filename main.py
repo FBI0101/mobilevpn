@@ -62,5 +62,6 @@ def main():
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_video))
     application.run_polling()
 
-if name == "main":
+# Garante que o código abaixo seja executado apenas quando o script for rodado diretamente
+if __name__ == "__main__":
     main()
