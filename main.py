@@ -3,7 +3,6 @@ import tempfile
 import yt_dlp as youtube_dl
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
-import time
 
 # Token do seu bot do Telegram
 TOKEN = '7329791456:AAFd7GHgWxNey2FWdGpas5J-bvJvs3fuwFc'
@@ -38,15 +37,11 @@ async def handle_video(update: Update, context):
     url = update.message.text
     if 'youtube.com' in url or 'youtu.be' in url:
         await update.message.reply_text('Baixando o vídeo, por favor, aguarde...')
-        
-        # Adiciona o delay de 5 segundos antes de tentar baixar o vídeo
-        time.sleep(5)
-        
         video_file, title, temp_dir = download_video(url)
         if video_file:
             try:
                 # Envia o vídeo com o título como legenda
-                await update.message.reply_video(video=open(video_file, 'rb'), caption=f"Título: {title}", parse_mode='Markdown')
+                await update.message.reply_video(video=open(video_file, 'rb'), caption=f"**Título:** {title}", parse_mode='Markdown')
             except Exception as e:
                 await update.message.reply_text(f"Erro ao enviar o vídeo: {e}")
             finally:
