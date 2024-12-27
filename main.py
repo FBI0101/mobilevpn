@@ -1,74 +1,91 @@
 import os
-import tempfile
 import yt_dlp as youtube_dl
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
-import requests
 
-# Token do seu bot do Telegram
+# Substitua com o token do seu bot
 TOKEN = '7329791456:AAFd7GHgWxNey2FWdGpas5J-bvJvs3fuwFc'
 
 # Função para baixar o vídeo usando yt-dlp
-def download_video(url):
-    try:
-        # Cria um diretório temporário
-        temp_dir = tempfile.mkdtemp()
-        ydl_opts = {
-            'format': 'best',
-            'outtmpl': os.path.join(temp_dir, '%(title)s.%(ext)s'),
-            'noplaylist': True,
-            'quiet': True,
-        }
+def download_video(url, download_path):
+    # Verificar se o diretório de download existe, se não, cria-lo
+    if not os.path.exists(download_path):
+        try:
+            os.makedirs(download_path, exist_ok=True)  # Criação do diretório
+            print(f"Diretório {download_path} criado com sucesso!")
+        except Exception as e:
+            print(f"Erro ao criar o diretório: {e}")
+            return None
 
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+    ydl_opts = {
+        'format': 'best',
+        'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
+        'noplaylist': True,
+        'quiet': True,
+    }
+
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        try:
             info_dict = ydl.extract_info(url, download=True)
             filename = ydl.prepare_filename(info_dict)
-            title = info_dict.get('title', 'Sem título')
-            return filename, title, temp_dir
-    except Exception as e:
-        print(f"Erro ao baixar o vídeo: {e}")
-        return None, None, None
+            return filename
+        except Exception as e:
+            print(f"Erro ao baixar o vídeo: {e}")
+            return None
 
-# Função para responder ao comando /start
+# Função que será chamada quando o bot receber uma mensagem
 async def start(update: Update, context):
     await update.message.reply_text('Olá! Envie um link do YouTube para baixar o vídeo.')
 
-# Função para lidar com os links de vídeo
+# Função para lidar com links de vídeos do YouTube
 async def handle_video(update: Update, context):
-    print("Recebido um link de vídeo:", update.message.text)  # Adicionando log de depuração
     url = update.message.text
     if 'youtube.com' in url or 'youtu.be' in url:
+        # Baixar o vídeo
         await update.message.reply_text('Baixando o vídeo, por favor, aguarde...')
-        video_file, title, temp_dir = download_video(url)
+        download_path = './downloads/'  # Caminho onde o vídeo será salvo dentro do projeto
+        video_file = download_video(url, download_path)
         if video_file:
-            try:
-                # Envia o vídeo com o título como legenda
-                await update.message.reply_video(video=open(video_file, 'rb'), caption=f"**Título:** {title}", parse_mode='Markdown')
-            except Exception as e:
-                await update.message.reply_text(f"Erro ao enviar o vídeo: {e}")
-            finally:
-                # Limpa o diretório temporário
-                if temp_dir and os.path.exists(temp_dir):
-                    for file in os.listdir(temp_dir):
-                        os.remove(os.path.join(temp_dir, file))
-                    os.rmdir(temp_dir)
+            # Enviar o vídeo de volta para o Telegram
+            with open(video_file, 'rb') as video:
+                await update.message.reply_video(video=video)
+            os.remove(video_file)  # Remover o vídeo após enviar
         else:
             await update.message.reply_text('Erro ao baixar o vídeo. Tente novamente mais tarde.')
     else:
         await update.message.reply_text('Por favor, envie um link válido do YouTube.')
 
-# Função principal para inicializar o bot
-def main():
-    # Desativando webhook antes de iniciar o bot
-    url = f"https://api.telegram.org/bot{TOKEN}/deleteWebhook"
-    requests.get(url)
-
+# Função para iniciar o bot
+def start_bot():
     application = Application.builder().token(TOKEN).build()
+
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_video))
 
-    # Rodando o bot em modo polling
-    application.run_polling(drop_pending_updates=True)
+    application.run_polling()
 
-if __name__ == "__main__":
-    main()
+# Função de controle do painel
+def control_panel():
+    while True:
+        print("Painel de Controle do Bot:")
+        print("1. Iniciar o Bot")
+        print("2. Parar o Bot")
+        print("3. Verificar Status")
+        print("4. Sair")
+        choice = input("Escolha uma opção (1/2/3/4): ")
+
+        if choice == '1':
+            start_bot()
+        elif choice == '2':
+            print("Bot parado (note que o Replit pode continuar executando).")
+            break
+        elif choice == '3':
+            print("Bot está em execução.")  # Status simplificado
+        elif choice == '4':
+            print("Saindo...")
+            break
+        else:
+            print("Opção inválida. Tente novamente.")
+
+if name == "main":
+    control_panel()
