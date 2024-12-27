@@ -3,7 +3,7 @@ import yt_dlp as youtube_dl
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 
-TOKEN = '7329791456:AAFd7GHgWxNey2FWdGpas5J-bvJvs3fuwFc'
+TOKEN = 'SEU_TOKEN_AQUI'
 
 def download_video(url, download_path, resolution):
     if not os.path.exists(download_path):
@@ -18,6 +18,7 @@ def download_video(url, download_path, resolution):
         'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
         'noplaylist': True,
         'quiet': True,
+        'cookiesfrombrowser': ('chrome',),  # Usa cookies do navegador Chrome
     }
 
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
