@@ -3,7 +3,7 @@ import yt_dlp as youtube_dl
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 
-TOKEN = 'SEU_TOKEN_AQUI'
+TOKEN = '7329791456:AAFd7GHgWxNey2FWdGpas5J-bvJvs3fuwFc'
 
 def download_video(url, download_path, resolution):
     if not os.path.exists(download_path):
