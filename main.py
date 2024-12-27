@@ -1,6 +1,6 @@
 import os
 import yt_dlp as youtube_dl
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
 TOKEN = '7329791456:AAFd7GHgWxNey2FWdGpas5J-bvJvs3fuwFc'
@@ -36,37 +36,40 @@ async def start(update: Update, context):
 async def handle_video(update: Update, context):
     url = update.message.text
     if 'youtube.com' in url or 'youtu.be' in url:
-        await update.message.reply_text('Escolha a resolução do vídeo:\n1. 720p\n2. 1080p')
-        return
+        context.user_data["video_url"] = url
+        keyboard = [
+            [InlineKeyboardButton("720p", callback_data='720')],
+            [InlineKeyboardButton("1080p", callback_data='1080')]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await update.message.reply_text('Escolha a resolução do vídeo:', reply_markup=reply_markup)
     else:
         await update.message.reply_text('Por favor, envie um link válido do YouTube.')
 
 async def handle_resolution(update: Update, context):
-    resolution = update.message.text.strip()
-    if resolution == "1":
+    query = update.callback_query
+    resolution = query.data
+    if resolution == "720":
         resolution = 720
-    elif resolution == "2":
+    elif resolution == "1080":
         resolution = 1080
-    else:
-        await update.message.reply_text('Escolha uma resolução válida (1 para 720p, 2 para 1080p).')
-        return
     
     url = context.user_data.get("video_url")
     if not url:
-        await update.message.reply_text('Erro: URL não encontrada.')
+        await query.answer('Erro: URL não encontrada.')
         return
-
-    await update.message.reply_text(f'Baixando o vídeo em {resolution}p, aguarde...')
+    
+    await query.answer(f'Baixando o vídeo em {resolution}p, aguarde...')
     
     download_path = '/tmp/'
     video_file, title = download_video(url, download_path, resolution)
     
     if video_file:
         with open(video_file, 'rb') as video:
-            await update.message.reply_video(video, caption=title)
+            await query.message.reply_video(video, caption=title)
         os.remove(video_file)
     else:
-        await update.message.reply_text('Erro ao baixar o vídeo. Tente novamente mais tarde.')
+        await query.message.reply_text('Erro ao baixar o vídeo. Tente novamente mais tarde.')
 
 def start_bot():
     application = Application.builder().token(TOKEN).build()
