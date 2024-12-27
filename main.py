@@ -1,7 +1,7 @@
 import os
 import yt_dlp as youtube_dl
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, MessageHandler, filters
+from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 
 TOKEN = '7329791456:AAFd7GHgWxNey2FWdGpas5J-bvJvs3fuwFc'
 
@@ -76,7 +76,7 @@ def start_bot():
 
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_video))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_resolution))
+    application.add_handler(CallbackQueryHandler(handle_resolution))  # Corrigido para lidar com callback
 
     application.run_polling()
 
