@@ -3,6 +3,7 @@ import tempfile
 import yt_dlp as youtube_dl
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
+import requests
 
 # Token do seu bot do Telegram
 TOKEN = '7329791456:AAFd7GHgWxNey2FWdGpas5J-bvJvs3fuwFc'
@@ -58,6 +59,10 @@ async def handle_video(update: Update, context):
 
 # Função principal para inicializar o bot
 def main():
+    # Desativando webhook antes de iniciar o bot
+    url = f"https://api.telegram.org/bot{TOKEN}/deleteWebhook"
+    requests.get(url)
+
     application = Application.builder().token(TOKEN).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_video))
