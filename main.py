@@ -90,5 +90,6 @@ def control_panel():
         else:
             print("Opção inválida. Tente novamente.")
 
-if name == "main":
+if __name__ == "__main__":
+    main()
     control_panel()
