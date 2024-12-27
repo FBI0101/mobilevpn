@@ -1,12 +1,11 @@
 import os
 import yt_dlp as youtube_dl
-import asyncio
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
 TOKEN = '7329791456:AAFd7GHgWxNey2FWdGpas5J-bvJvs3fuwFc'
 
-def download_video(url, download_path):
+def download_video(url, download_path, resolution):
     if not os.path.exists(download_path):
         try:
             os.makedirs(download_path)
@@ -15,7 +14,7 @@ def download_video(url, download_path):
             return None, None
 
     ydl_opts = {
-        'format': 'best',
+        'format': f'bestvideo[height<={resolution}]+bestaudio/best',
         'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
         'noplaylist': True,
         'quiet': True,
@@ -37,28 +36,44 @@ async def start(update: Update, context):
 async def handle_video(update: Update, context):
     url = update.message.text
     if 'youtube.com' in url or 'youtu.be' in url:
-        await update.message.reply_text('Baixando o vídeo, por favor, aguarde...')
-        
-        download_path = '/tmp/'
-        video_file, title = download_video(url, download_path)
-        
-        if video_file:
-            with open(video_file, 'rb') as video:
-                await update.message.reply_video(video, caption=title)
-            os.remove(video_file)
-        else:
-            await update.message.reply_text('Erro ao baixar o vídeo. Tente novamente mais tarde.')
+        await update.message.reply_text('Escolha a resolução do vídeo:\n1. 720p\n2. 1080p')
+        return
     else:
         await update.message.reply_text('Por favor, envie um link válido do YouTube.')
 
-    # Adicionando um intervalo de 10 segundos entre as solicitações
-    await asyncio.sleep(10)
+async def handle_resolution(update: Update, context):
+    resolution = update.message.text.strip()
+    if resolution == "1":
+        resolution = 720
+    elif resolution == "2":
+        resolution = 1080
+    else:
+        await update.message.reply_text('Escolha uma resolução válida (1 para 720p, 2 para 1080p).')
+        return
+    
+    url = context.user_data.get("video_url")
+    if not url:
+        await update.message.reply_text('Erro: URL não encontrada.')
+        return
+
+    await update.message.reply_text(f'Baixando o vídeo em {resolution}p, aguarde...')
+    
+    download_path = '/tmp/'
+    video_file, title = download_video(url, download_path, resolution)
+    
+    if video_file:
+        with open(video_file, 'rb') as video:
+            await update.message.reply_video(video, caption=title)
+        os.remove(video_file)
+    else:
+        await update.message.reply_text('Erro ao baixar o vídeo. Tente novamente mais tarde.')
 
 def start_bot():
     application = Application.builder().token(TOKEN).build()
 
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_video))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_resolution))
 
     application.run_polling()
 
