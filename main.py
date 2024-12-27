@@ -76,7 +76,7 @@ def start_bot():
 
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_video))
-    application.add_handler(CallbackQueryHandler(handle_resolution))  # Corrigido para lidar com callback
+    application.add_handler(CallbackQueryHandler(handle_resolution))
 
     application.run_polling()
 
