@@ -5,7 +5,7 @@ import shutil
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
-TOKEN = 'seu-token-aqui'
+TOKEN = '7329791456:AAFd7GHgWxNey2FWdGpas5J-bvJvs3fuwFc'
 
 def download_video(url, download_path):
     ydl_opts = {
