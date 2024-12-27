@@ -61,7 +61,9 @@ def main():
     application = Application.builder().token(TOKEN).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_video))
-    application.run_polling()
+
+    # Rodando o bot em modo polling
+    application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()
