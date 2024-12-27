@@ -1,3 +1,2 @@
-pip install --upgrade -r requirements.txt
-python-telegram-bot==20.0
-yt-dlp==2023.12.20
+flask==2.3.3
+gunicorn==20.1.0
